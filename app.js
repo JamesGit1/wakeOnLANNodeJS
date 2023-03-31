@@ -2,8 +2,12 @@ const express = require('express');
 const app = express();
 const server = require('http').Server(app);
 const port = 3000;
+const bodyParser = require('body-parser')
+const fs = require('fs');
 var wol = require('wake_on_lan');
 
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use((req, res, next) => {
 	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
@@ -34,15 +38,25 @@ app.get('/', (err, res) => {
 	res.end();
 });
 
-app.get('/wol', (err, res) => {
-	res.status(200);
-    wol.wake('2C:F0:5D:DB:83:F0', { address: "192.168.0.255" }, function(error) {
-        if (error) {
-            err = error;
-            console.log("Failed to send packets");// handle error
-        } else {
-            console.log("Packets sent");// done sending packets
-        }
-    });
-	res.end();
+app.post('/wol', (req, res) => {
+	let data = req.body;
+	let dataJSON = JSON.parse(fs.readFileSync('data.json'));
+	if(data.password === dataJSON.password){
+		wol.wake('2C:F0:5D:DB:83:F0', { address: "192.168.0.255" }, function(error) {
+			if (error) {
+				err = error;
+				console.log("Failed to send packets");// handle error
+				res.status(500);
+				res.send('Failed to send packets...');
+			} else {
+				console.log("Packets sent");// done sending packets
+				res.status(200);
+				res.send('Success, packets sent, PC should power on...');
+			}
+		});
+	}
+	else{
+		res.status(403);
+		res.end();
+	}
 });

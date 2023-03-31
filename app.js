@@ -22,7 +22,7 @@ server.listen(port, (err) => {
 		throw err;
 	}
 	/* eslint-disable no-console */
-	console.log('Node Endpoints working :)');
+	console.log('Node Endpoints working :), open on port http://localhost:3000');
 });
 
 module.exports = server;
